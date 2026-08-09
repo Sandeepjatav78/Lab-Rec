@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import labsRouter from "./routes/labs.js";
 import chemicalsRouter from "./routes/chemicals.js";
 import requirementsRouter from "./routes/requirements.js";
+import authRouter, { verifyAuth } from "./routes/auth.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -14,9 +15,10 @@ const MONGODB_URI =
 app.use(cors());
 app.use(express.json());
 
-app.use("/api/labs", labsRouter);
-app.use("/api/chemicals", chemicalsRouter);
-app.use("/api/requirements", requirementsRouter);
+app.use("/api/auth", authRouter);
+app.use("/api/labs", verifyAuth, labsRouter);
+app.use("/api/chemicals", verifyAuth, chemicalsRouter);
+app.use("/api/requirements", verifyAuth, requirementsRouter);
 
 app.get("/api/health", (_req, res) => res.json({ status: "ok" }));
 

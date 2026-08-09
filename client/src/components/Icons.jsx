@@ -114,3 +114,23 @@ export const IconMenu = svg(
     <path d="M4 6h16M4 12h16M4 18h16" />
   </>
 );
+export const IconLogout = svg(
+  <>
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+    <path d="M16 17l5-5-5-5M21 12H9" />
+  </>
+);
+export const IconEye = svg(
+  <>
+    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+    <circle cx="12" cy="12" r="3" />
+  </>
+);
+export const IconEyeOff = svg(
+  <>
+    <path d="M9.9 4.24A9.1 9.1 0 0 1 12 4c6.5 0 10 7 10 7a13.2 13.2 0 0 1-1.67 2.68" />
+    <path d="M6.61 6.61A13.5 13.5 0 0 0 2 12s3.5 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
+    <path d="M9.9 14.1a3 3 0 0 0 4.2-4.2" />
+    <path d="m2 2 20 20" />
+  </>
+);

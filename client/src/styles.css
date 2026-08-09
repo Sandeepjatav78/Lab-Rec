@@ -1239,3 +1239,71 @@ textarea::placeholder {
     justify-content: center;
   }
 }
+
+/* ---------- Login ---------- */
+
+.login-wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 360px;
+  padding: 32px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.login-logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2, var(--accent)));
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.login-title {
+  font-size: 22px;
+  text-align: center;
+  margin: 0;
+}
+
+.login-sub {
+  text-align: center;
+  color: var(--text-muted);
+  margin: -4px 0 4px;
+}
+
+.login-card .input {
+  width: 100%;
+}
+
+.password-wrap {
+  position: relative;
+}
+
+.password-wrap .input {
+  width: 100%;
+  padding-right: 38px;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+}
+
+.password-toggle:hover {
+  color: var(--text);
+}

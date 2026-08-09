@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { useTheme } from "../context/ThemeContext.jsx";
-import { IconFlask, IconHome, IconSearch, IconCube, IconSun, IconMoon, IconChart, IconMenu, IconX } from "./Icons.jsx";
+import { IconFlask, IconHome, IconSearch, IconCube, IconSun, IconMoon, IconChart, IconMenu, IconX, IconLogout } from "./Icons.jsx";
 import { useState } from "react";
 
 const links = [
@@ -11,7 +11,7 @@ const links = [
   { to: "/search", label: "Search", icon: <IconSearch size={18} /> },
 ];
 
-function Nav({ onNavigate }) {
+function Nav({ onNavigate, onLogout }) {
   const { theme, toggleTheme } = useTheme();
   return (
     <>
@@ -37,12 +37,19 @@ function Nav({ onNavigate }) {
         >
           {theme === "light" ? <IconMoon size={18} /> : <IconSun size={18} />}
         </button>
+        <button
+          className="btn-icon"
+          onClick={onLogout}
+          title="Log out"
+        >
+          <IconLogout size={18} />
+        </button>
       </div>
     </>
   );
 }
 
-export default function Layout({ children }) {
+export default function Layout({ children, onLogout }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
@@ -54,7 +61,7 @@ export default function Layout({ children }) {
           </div>
           <span className="brand-name">LabRec</span>
         </div>
-        <Nav />
+        <Nav onLogout={onLogout} />
       </aside>
 
       {drawerOpen && (
@@ -69,7 +76,7 @@ export default function Layout({ children }) {
                 <IconX size={16} />
               </button>
             </div>
-            <Nav onNavigate={() => setDrawerOpen(false)} />
+            <Nav onNavigate={() => setDrawerOpen(false)} onLogout={onLogout} />
           </aside>
         </div>
       )}
