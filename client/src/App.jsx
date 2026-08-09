@@ -7,6 +7,7 @@ import OverviewPage from "./pages/OverviewPage.jsx";
 import LabsPage from "./pages/LabsPage.jsx";
 import ChemicalsPage from "./pages/ChemicalsPage.jsx";
 import SearchPage from "./pages/SearchPage.jsx";
+import ImportPage from "./pages/ImportPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import { getToken, clearToken } from "./auth.js";
 
@@ -39,6 +40,7 @@ export default function App() {
           <Route path="/overview" element={<OverviewPage />} />
           <Route path="/labs" element={<LabsPage />} />
           <Route path="/chemicals" element={<ChemicalsPage />} />
+          <Route path="/import" element={<ImportPage />} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

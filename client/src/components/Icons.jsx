@@ -120,6 +120,13 @@ export const IconLogout = svg(
     <path d="M16 17l5-5-5-5M21 12H9" />
   </>
 );
+export const IconUpload = svg(
+  <>
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    <path d="m17 8-5-5-5 5" />
+    <path d="M12 3v12" />
+  </>
+);
 export const IconEye = svg(
   <>
     <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />

@@ -1360,3 +1360,88 @@ textarea::placeholder {
   font-size: 13px;
   padding: 6px 0 2px;
 }
+
+/* ---------- Excel Import ---------- */
+
+.dropzone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 48px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.dropzone:hover,
+.dropzone-over {
+  border-color: var(--accent);
+  background: var(--surface-hover);
+}
+
+.dropzone-icon {
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+
+.dropzone-title {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.dropzone-hint {
+  color: var(--text-muted);
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.import-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.import-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.import-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+
+.import-item-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.import-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.import-note {
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.import-note code {
+  background: var(--surface-hover);
+  padding: 1px 6px;
+  border-radius: 5px;
+  font-size: 12px;
+}

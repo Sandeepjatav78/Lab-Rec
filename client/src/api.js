@@ -68,4 +68,15 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ date }),
     }),
+
+  previewImport: (fileBase64) =>
+    request("/import/preview", {
+      method: "POST",
+      body: JSON.stringify({ fileBase64 }),
+    }),
+  importExcel: (fileBase64) =>
+    request("/import/excel", {
+      method: "POST",
+      body: JSON.stringify({ fileBase64 }),
+    }),
 };

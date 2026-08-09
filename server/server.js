@@ -6,6 +6,7 @@ import labsRouter from "./routes/labs.js";
 import chemicalsRouter from "./routes/chemicals.js";
 import requirementsRouter from "./routes/requirements.js";
 import authRouter, { verifyAuth } from "./routes/auth.js";
+import importRouter from "./routes/import.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -13,12 +14,13 @@ const MONGODB_URI =
   process.env.MONGODB_URI || "mongodb://localhost:27017/lab-rec";
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "30mb" }));
 
 app.use("/api/auth", authRouter);
 app.use("/api/labs", verifyAuth, labsRouter);
 app.use("/api/chemicals", verifyAuth, chemicalsRouter);
 app.use("/api/requirements", verifyAuth, requirementsRouter);
+app.use("/api/import", verifyAuth, importRouter);
 
 app.get("/api/health", (_req, res) => res.json({ status: "ok" }));
 
