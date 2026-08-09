@@ -957,6 +957,12 @@ textarea::placeholder {
   background: var(--surface);
 }
 
+.mat-chip-equipment {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
 .req-notes {
   color: var(--text-secondary);
   font-size: 12px;
@@ -1306,4 +1312,51 @@ textarea::placeholder {
 
 .password-toggle:hover {
   color: var(--text);
+}
+
+.needs-card {
+  margin-bottom: 16px;
+  padding: 16px 18px;
+}
+
+.needs-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.needs-title {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.needs-sub {
+  color: var(--text-muted);
+  font-size: 12.5px;
+}
+
+.needs-block {
+  margin-top: 10px;
+}
+
+.needs-block + .needs-block {
+  border-top: 1px dashed var(--border);
+  padding-top: 10px;
+}
+
+.needs-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.needs-empty {
+  color: var(--text-muted);
+  font-size: 13px;
+  padding: 6px 0 2px;
 }

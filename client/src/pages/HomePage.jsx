@@ -95,6 +95,27 @@ export default function HomePage() {
   const completedCount = dayRequirements.filter((r) => r.completed).length;
   const isToday = sameDay(selected, new Date());
 
+  const chemTotals = new Map();
+  const eqSet = new Set();
+  for (const r of dayRequirements) {
+    for (const m of r.materials) {
+      const chem = m.chemical;
+      const id = chem?._id || m.chemical;
+      if (!id) continue;
+      const cur = chemTotals.get(String(id)) || {
+        id,
+        name: chem?.name || "Unknown",
+        qty: 0,
+        unit: chem?.unit || "",
+      };
+      cur.qty += m.quantity || 0;
+      chemTotals.set(String(id), cur);
+    }
+    for (const e of r.equipment || []) eqSet.add(e);
+  }
+  const chemList = [...chemTotals.values()];
+  const eqList = [...eqSet];
+
   const toggleComplete = async (req) => {
     setToggling(req._id);
     try {
@@ -135,13 +156,6 @@ export default function HomePage() {
     }
   };
 
-  const dateLabel = selected.toLocaleDateString(undefined, {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
-
   return (
     <div>
       <div className="page-header">
@@ -178,6 +192,47 @@ export default function HomePage() {
             Next day →
           </button>
         </div>
+      </div>
+
+      <div className="card needs-card">
+        <div className="needs-head">
+          <div>
+            <div className="needs-title">Needed on {DAY_LABELS[num]}</div>
+            <div className="needs-sub">
+              {selected.toLocaleDateString(undefined, { month: "long", day: "numeric" })} · {dayRequirements.length} lab{dayRequirements.length === 1 ? "" : "s"}
+            </div>
+          </div>
+          <span className="badge badge-accent">{isToday ? "Today's stock list" : "Stock list"}</span>
+        </div>
+        {chemList.length === 0 && eqList.length === 0 ? (
+          <div className="needs-empty">
+            No chemicals or equipment scheduled for {DAY_LABELS[num]}. Add them in a requirement to see them here.
+          </div>
+        ) : (
+          <>
+            {chemList.length > 0 && (
+              <div className="needs-block">
+                <div className="needs-label">Chemicals</div>
+                <div className="req-mats">
+                  {chemList.map((c) => (
+                    <span className="mat-chip" key={c.id}>
+                      {c.name}
+                      {c.qty > 0 && ` · ${c.qty} ${c.unit}`.trim()}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            {eqList.length > 0 && (
+              <div className="needs-block">
+                <div className="needs-label">Equipment</div>
+                <div className="req-mats">
+                  <span className="mat-chip mat-chip-equipment">{eqList.join(" · ")}</span>
+                </div>
+              </div>
+            )}
+          </>
+        )}
       </div>
 
       <div className="card day-view">
@@ -223,11 +278,18 @@ export default function HomePage() {
                 {req.materials.length > 0 && (
                   <div className="req-mats">
                     {req.materials.map((m) => (
-                      <span className="mat-chip" key={m.chemical._id || m.chemical}>
+                      <span className="mat-chip" key={m.chemical?._id || m.chemical}>
                         {m.chemical?.name || "Unknown"}
                         {m.quantity > 0 && ` · ${m.quantity} ${m.chemical?.unit || ""}`.trim()}
                       </span>
                     ))}
+                  </div>
+                )}
+                {req.equipment?.length > 0 && (
+                  <div className="req-mats">
+                    <span className="mat-chip mat-chip-equipment">
+                      {req.equipment.join(" · ")}
+                    </span>
                   </div>
                 )}
                 {req.notes && <div className="req-notes">{req.notes}</div>}

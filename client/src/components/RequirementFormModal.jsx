@@ -27,9 +27,11 @@ export default function RequirementFormModal({
       chemical: m.chemical?._id || m.chemical,
       quantity: m.quantity || 0,
     })) || [],
+    equipment: requirement?.equipment || [],
   }));
   const [pickerChem, setPickerChem] = useState(chemicals[0]?._id || "");
   const [pickerQty, setPickerQty] = useState("");
+  const [pickerEq, setPickerEq] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -54,6 +56,17 @@ export default function RequirementFormModal({
       materials: form.materials.filter((m) => m.chemical !== chemical),
     });
 
+  const addEquipment = () => {
+    const name = pickerEq.trim();
+    if (!name) return;
+    if (form.equipment.some((e) => e.toLowerCase() === name.toLowerCase())) return;
+    setForm({ ...form, equipment: [...form.equipment, name] });
+    setPickerEq("");
+  };
+
+  const removeEquipment = (name) =>
+    setForm({ ...form, equipment: form.equipment.filter((e) => e !== name) });
+
   const setQty = (chemical, qty) =>
     setForm({
       ...form,
@@ -76,6 +89,7 @@ export default function RequirementFormModal({
         time: form.time,
         notes: form.notes,
         materials: form.materials,
+        equipment: form.equipment,
       });
       onClose();
     } catch (err) {
@@ -192,6 +206,51 @@ export default function RequirementFormModal({
                   </div>
                 );
               })}
+            </div>
+          )}
+        </div>
+
+        <div className="form-field" style={{ marginTop: 16 }}>
+          <label className="form-label">Equipment needed</label>
+          <div className="row" style={{ gap: 8, alignItems: "stretch" }}>
+            <input
+              style={{ flex: 1 }}
+              placeholder="e.g. Bunsen burner, balance, beaker"
+              value={pickerEq}
+              onChange={(e) => setPickerEq(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  addEquipment();
+                }
+              }}
+            />
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={addEquipment}
+              disabled={!pickerEq.trim()}
+              title="Add equipment"
+            >
+              <IconPlus size={14} />
+            </button>
+          </div>
+
+          {form.equipment.length > 0 && (
+            <div className="materials-list">
+              {form.equipment.map((name) => (
+                <div className="material-chip" key={name}>
+                  <span style={{ fontWeight: 600 }}>{name}</span>
+                  <button
+                    type="button"
+                    className="btn-icon icon-btn-danger"
+                    onClick={() => removeEquipment(name)}
+                    title="Remove"
+                  >
+                    <IconX size={13} />
+                  </button>
+                </div>
+              ))}
             </div>
           )}
         </div>

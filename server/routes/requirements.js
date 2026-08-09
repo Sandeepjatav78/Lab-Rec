@@ -73,6 +73,7 @@ router.post("/", async (req, res) => {
       dayOfWeek,
       time: req.body.time?.trim() ?? "",
       materials: req.body.materials ?? [],
+      equipment: (req.body.equipment ?? []).map((e) => String(e).trim()).filter(Boolean),
       notes: req.body.notes?.trim() ?? "",
     });
     res.status(201).json(requirement);
@@ -88,6 +89,9 @@ router.patch("/:id", async (req, res) => {
   try {
     const update = { ...req.body };
     delete update.completions;
+    if (update.equipment) {
+      update.equipment = update.equipment.map((e) => String(e).trim()).filter(Boolean);
+    }
     if (update.materials?.length) {
       for (const m of update.materials) {
         if (!m.chemical || !(await Chemical.findById(m.chemical))) {

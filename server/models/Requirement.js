@@ -11,6 +11,7 @@ const requirementSchema = new mongoose.Schema(
     dayOfWeek: { type: Number, min: 1, max: 5, required: true },
     time: { type: String, trim: true, default: "" },
     materials: { type: [materialSchema], default: [] },
+    equipment: { type: [String], default: [] },
     notes: { type: String, trim: true, default: "" },
     completions: {
       type: [
