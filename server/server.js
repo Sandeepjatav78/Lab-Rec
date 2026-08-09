@@ -20,29 +20,33 @@ app.use("/api/requirements", requirementsRouter);
 
 app.get("/api/health", (_req, res) => res.json({ status: "ok" }));
 
+app.get("/", (_req, res) =>
+  res.json({ status: "ok", service: "Lab-Rec API" })
+);
+
 app.use((_req, res) => res.status(404).json({ message: "Route not found" }));
+
+export default app;
 
 mongoose
   .connect(MONGODB_URI)
-  .then(() => {
-    console.log("Connected to MongoDB");
-    const server = app.listen(PORT, () =>
-      console.log(`API server on http://localhost:${PORT}`)
-    );
-    server.on("error", (err) => {
-      if (err.code === "EADDRINUSE") {
-        console.error(
-          `\nPort ${PORT} is already in use — is the server already running?\n` +
-            `Find and stop it with:  lsof -i :${PORT}   (then kill the PID)\n` +
-            `Or use:  npm run stop   from the project root.\n`
-        );
-      } else {
-        console.error("Server error:", err.message);
-      }
-      process.exit(1);
-    });
-  })
-  .catch((err) => {
-    console.error("MongoDB connection failed:", err.message);
+  .then(() => console.log("Connected to MongoDB"))
+  .catch((err) => console.error("MongoDB connection failed:", err.message));
+
+if (!process.env.VERCEL) {
+  const server = app.listen(PORT, () =>
+    console.log(`API server on http://localhost:${PORT}`)
+  );
+  server.on("error", (err) => {
+    if (err.code === "EADDRINUSE") {
+      console.error(
+        `\nPort ${PORT} is already in use — is the server already running?\n` +
+          `Find and stop it with:  lsof -i :${PORT}   (then kill the PID)\n` +
+          `Or use:  npm run stop   from the project root.\n`
+      );
+    } else {
+      console.error("Server error:", err.message);
+    }
     process.exit(1);
   });
+}
