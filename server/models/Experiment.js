@@ -22,4 +22,4 @@ const experimentSchema = new mongoose.Schema(
 
 experimentSchema.index({ name: "text", subject: "text" });
 
-export default mongoose.model("Experiment", experimentSchema);
+export default mongoose.models.Experiment || mongoose.model("Experiment", experimentSchema);

@@ -26,4 +26,4 @@ const requirementSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export default mongoose.model("Requirement", requirementSchema);
+export default mongoose.models.Requirement || mongoose.model("Requirement", requirementSchema);

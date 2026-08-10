@@ -21,4 +21,4 @@ const chemicalSchema = new mongoose.Schema(
 
 chemicalSchema.index({ name: "text", formula: "text", casNumber: "text" });
 
-export default mongoose.model("Chemical", chemicalSchema);
+export default mongoose.models.Chemical || mongoose.model("Chemical", chemicalSchema);

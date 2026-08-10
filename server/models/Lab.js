@@ -28,4 +28,4 @@ labSchema.virtual("chemicals", {
 
 labSchema.set("toJSON", { virtuals: true });
 
-export default mongoose.model("Lab", labSchema);
+export default mongoose.models.Lab || mongoose.model("Lab", labSchema);
