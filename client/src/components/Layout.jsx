@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { useTheme } from "../context/ThemeContext.jsx";
-import { IconFlask, IconHome, IconSearch, IconCube, IconSun, IconMoon, IconChart, IconMenu, IconX, IconLogout, IconUpload } from "./Icons.jsx";
+import { IconFlask, IconHome, IconSearch, IconCube, IconSun, IconMoon, IconChart, IconMenu, IconX, IconLogout, IconUpload, IconBeaker } from "./Icons.jsx";
 import { useState } from "react";
 
 const links = [
@@ -8,6 +8,7 @@ const links = [
   { to: "/overview", label: "Overview", icon: <IconChart size={18} /> },
   { to: "/labs", label: "Labs", icon: <IconCube size={18} /> },
   { to: "/chemicals", label: "Chemicals", icon: <IconFlask size={18} /> },
+  { to: "/experiments", label: "Experiments", icon: <IconBeaker size={18} /> },
   { to: "/import", label: "Import", icon: <IconUpload size={18} /> },
   { to: "/search", label: "Search", icon: <IconSearch size={18} /> },
 ];

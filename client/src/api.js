@@ -79,4 +79,27 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ fileBase64 }),
     }),
+
+  getExperiments: (q) =>
+    request(`/experiments${q ? `?q=${encodeURIComponent(q)}` : ""}`),
+  createExperiment: (payload) =>
+    request("/experiments", { method: "POST", body: JSON.stringify(payload) }),
+  createExperimentsBulk: (experiments) =>
+    request("/experiments/bulk", {
+      method: "POST",
+      body: JSON.stringify({ experiments }),
+    }),
+  updateExperiment: (id, payload) =>
+    request(`/experiments/${id}`, { method: "PATCH", body: JSON.stringify(payload) }),
+  deleteExperiment: (id) => request(`/experiments/${id}`, { method: "DELETE" }),
+  deleteExperiments: (ids) =>
+    request("/experiments/bulk-delete", {
+      method: "POST",
+      body: JSON.stringify({ ids }),
+    }),
+  previewExperimentsPdf: (fileBase64) =>
+    request("/experiments/preview", {
+      method: "POST",
+      body: JSON.stringify({ fileBase64 }),
+    }),
 };

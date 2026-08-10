@@ -21,8 +21,10 @@ router.get("/", async (_req, res) => {
           name: 1,
           location: 1,
           description: 1,
+          equipment: 1,
           createdAt: 1,
           chemicalCount: { $size: "$chemicals" },
+          equipmentCount: { $size: { $ifNull: ["$equipment", []] } },
         },
       },
     ]);
@@ -31,6 +33,17 @@ router.get("/", async (_req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+
+function sanitizeEquipment(equipment) {
+  if (!Array.isArray(equipment)) return undefined;
+  return equipment
+    .filter((e) => e && typeof e.name === "string" && e.name.trim())
+    .map((e) => ({
+      name: e.name.trim(),
+      quantity: Number(e.quantity) >= 1 ? Number(e.quantity) : 1,
+      unit: typeof e.unit === "string" && e.unit.trim() ? e.unit.trim() : "pcs",
+    }));
+}
 
 router.post("/", async (req, res) => {
   try {
@@ -42,8 +55,11 @@ router.post("/", async (req, res) => {
       name: name.trim(),
       location: location?.trim() ?? "",
       description: description?.trim() ?? "",
+      equipment: sanitizeEquipment(req.body.equipment) ?? [],
     });
-    res.status(201).json({ ...lab.toJSON(), chemicalCount: 0 });
+    res
+      .status(201)
+      .json({ ...lab.toJSON(), chemicalCount: 0, equipmentCount: lab.equipment.length });
   } catch (err) {
     if (err.code === 11000) {
       return res.status(409).json({ message: "A lab with this name already exists" });
@@ -54,12 +70,19 @@ router.post("/", async (req, res) => {
 
 router.patch("/:id", async (req, res) => {
   try {
-    const lab = await Lab.findByIdAndUpdate(req.params.id, req.body, {
+    const body = { ...req.body };
+    if (body.name !== undefined && !String(body.name).trim()) {
+      return res.status(400).json({ message: "Lab name cannot be empty" });
+    }
+    if (body.location !== undefined) body.location = String(body.location).trim();
+    if (body.description !== undefined) body.description = String(body.description).trim();
+    if (body.equipment !== undefined) body.equipment = sanitizeEquipment(body.equipment) ?? [];
+    const lab = await Lab.findByIdAndUpdate(req.params.id, body, {
       new: true,
       runValidators: true,
     });
     if (!lab) return res.status(404).json({ message: "Lab not found" });
-    res.json(lab);
+    res.json({ ...lab.toJSON(), equipmentCount: lab.equipment.length });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

@@ -7,6 +7,7 @@ import chemicalsRouter from "./routes/chemicals.js";
 import requirementsRouter from "./routes/requirements.js";
 import authRouter, { verifyAuth } from "./routes/auth.js";
 import importRouter from "./routes/import.js";
+import experimentsRouter from "./routes/experiments.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -21,6 +22,7 @@ app.use("/api/labs", verifyAuth, labsRouter);
 app.use("/api/chemicals", verifyAuth, chemicalsRouter);
 app.use("/api/requirements", verifyAuth, requirementsRouter);
 app.use("/api/import", verifyAuth, importRouter);
+app.use("/api/experiments", verifyAuth, experimentsRouter);
 
 app.get("/api/health", (_req, res) => res.json({ status: "ok" }));
 
