@@ -23,20 +23,25 @@ app.options("*", cors());
 
 app.use(express.json({ limit: "30mb" }));
 
-app.get("/api/health", (_req, res) => res.json({ status: "ok" }));
-
-app.get("/", (_req, res) =>
+app.get(["/", "/api", "/api/health"], (_req, res) =>
   res.json({ status: "ok", service: "Lab-Rec API" })
 );
 
 app.use(async (req, res, next) => {
-  if (req.method === "OPTIONS") return next();
+  if (
+    req.method === "OPTIONS" ||
+    req.path === "/" ||
+    req.path === "/api" ||
+    req.path === "/api/health"
+  ) {
+    return next();
+  }
   try {
     await connectDB();
     next();
   } catch (err) {
     console.error("Database connection error:", err.message);
-    res.status(500).json({
+    return res.status(500).json({
       message: "Database connection failed",
       error: err.message,
     });

@@ -1,5 +1,3 @@
-import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
-
 const UNIT_RE = /\b(\d+(?:\.\d+)?)\s*(mg|kg|g|gm|mL|ml|cc|L|l|lit|M|N|mol|mM|µM|uM|%|drop|drops|cm|cm3|cm³|µg|ug)\b/i;
 
 const EQUIPMENT_KEYWORDS = [
@@ -488,6 +486,7 @@ function stripTrailingPunct(s) {
 }
 
 export async function parsePdfBuffer(buffer) {
+  const { getDocument } = await import("pdfjs-dist/legacy/build/pdf.mjs");
   const doc = await getDocument({
     data: new Uint8Array(buffer),
     verbosity: 0,
