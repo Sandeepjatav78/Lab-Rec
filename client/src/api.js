@@ -86,6 +86,11 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ fileBase64 }),
     }),
+  importChemicalList: (fileBase64, lab, includeStruck = false) =>
+    request("/import/list", {
+      method: "POST",
+      body: JSON.stringify({ fileBase64, lab, includeStruck }),
+    }),
 
   getExperiments: (q) =>
     request(`/experiments${q ? `?q=${encodeURIComponent(q)}` : ""}`),

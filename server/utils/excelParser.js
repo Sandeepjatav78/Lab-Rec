@@ -59,3 +59,47 @@ export function parseWorkbook(buffer) {
   }
   return sheets;
 }
+
+// Strip bullet/dash markers and markdown strikethrough from a list entry.
+function stripListMarkers(value) {
+  return normalize(value)
+    .replace(/^[-*•·▪◦\s]+/, "")
+    .replace(/~~+/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+// Rows that are clearly a heading, not a chemical.
+const HEADER_WORDS = new Set([
+  "chemical", "chemicals", "chemical list", "chemical name", "name", "item name",
+  "list", "reagents", "reagent list", "inventory", "s.no", "sr.no", "sno",
+]);
+
+/**
+ * Parse a plain "one chemical name per row" sheet (any number of sheets, first
+ * column of each). Returns [{ name, struck }] — `struck` marks entries that were
+ * crossed out with ~~...~~ in the source. Names are de-duplicated case-insensitively.
+ */
+export function parseChemicalNameList(buffer) {
+  const workbook = XLSX.read(buffer, { type: "buffer" });
+  const out = [];
+  const seen = new Set();
+  for (const sheetName of workbook.SheetNames) {
+    const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {
+      header: 1,
+      defval: "",
+    });
+    for (const row of rows) {
+      const raw = normalize(row[0]);
+      if (!raw) continue;
+      const struck = /~~.+~~/.test(raw);
+      const name = stripListMarkers(raw);
+      if (name.length < 2) continue;
+      const key = name.toLowerCase();
+      if (HEADER_WORDS.has(key) || seen.has(key)) continue;
+      seen.add(key);
+      out.push({ name, struck });
+    }
+  }
+  return out;
+}

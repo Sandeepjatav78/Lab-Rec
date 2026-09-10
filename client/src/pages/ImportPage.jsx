@@ -26,11 +26,15 @@ export default function ImportPage() {
   const [preview, setPreview] = useState(null);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState(null);
+  const [selectedLab, setSelectedLab] = useState("");
+  const [includeStruck, setIncludeStruck] = useState(false);
 
   const reset = () => {
     setFileName("");
     setPreview(null);
     setResult(null);
+    setSelectedLab("");
+    setIncludeStruck(false);
     if (inputRef.current) inputRef.current.value = "";
   };
 
@@ -46,7 +50,9 @@ export default function ImportPage() {
       const base64 = await readFileAsBase64(file);
       const data = await api.previewImport(base64);
       setFileName(file.name);
-      setPreview({ base64, sheets: data });
+      setPreview({ base64, ...data });
+      setSelectedLab("");
+      setIncludeStruck(false);
     } catch (e) {
       showError(e.message);
     } finally {
@@ -54,12 +60,11 @@ export default function ImportPage() {
     }
   };
 
-  const doImport = async () => {
-    if (!preview) return;
+  const doImportLabeled = async () => {
     setBusy(true);
     try {
       const data = await api.importExcel(preview.base64);
-      setResult(data.results);
+      setResult({ format: "labeled", rows: data.results });
       setPreview(null);
       showToast("Import completed");
     } catch (e) {
@@ -69,9 +74,37 @@ export default function ImportPage() {
     }
   };
 
-  const totalChemicals = preview
-    ? preview.sheets.reduce((sum, s) => sum + s.chemicalCount, 0)
-    : 0;
+  const doImportList = async () => {
+    if (!selectedLab) {
+      showError("Please choose which lab these chemicals belong to");
+      return;
+    }
+    setBusy(true);
+    try {
+      const data = await api.importChemicalList(
+        preview.base64,
+        selectedLab,
+        includeStruck
+      );
+      setResult({ format: "list", summary: data });
+      setPreview(null);
+      showToast(`${data.added} chemicals added to ${data.lab}`);
+    } catch (e) {
+      showError(e.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const labeledTotal =
+    preview?.format === "labeled"
+      ? preview.sheets.reduce((sum, s) => sum + s.chemicalCount, 0)
+      : 0;
+
+  const listActiveCount =
+    preview?.format === "list"
+      ? preview.total - (includeStruck ? 0 : preview.struckCount)
+      : 0;
 
   return (
     <div>
@@ -79,7 +112,7 @@ export default function ImportPage() {
         <div>
           <h1 className="page-title">Import Excel</h1>
           <p className="page-subtitle">
-            Upload the stock sheet — each sheet becomes a lab
+            Upload a stock sheet, or a plain list of chemical names
           </p>
         </div>
       </div>
@@ -119,7 +152,8 @@ export default function ImportPage() {
 
       {busy && <div className="loading">Processing…</div>}
 
-      {fileName && !busy && preview && (
+      {/* ---- Format A: one sheet per lab ---- */}
+      {fileName && !busy && preview?.format === "labeled" && (
         <div className="card">
           <div className="card-header import-head">
             <span>
@@ -128,8 +162,8 @@ export default function ImportPage() {
             </span>
             <span className="badge badge-accent">
               {preview.sheets.length}{" "}
-              {preview.sheets.length === 1 ? "lab" : "labs"} • {totalChemicals}{" "}
-              {totalChemicals === 1 ? "chemical" : "chemicals"}
+              {preview.sheets.length === 1 ? "lab" : "labs"} • {labeledTotal}{" "}
+              {labeledTotal === 1 ? "chemical" : "chemicals"}
             </span>
           </div>
           <div className="card-pad">
@@ -151,8 +185,8 @@ export default function ImportPage() {
               ))}
             </div>
             <div className="import-actions">
-              <button className="btn btn-primary" onClick={doImport} disabled={busy}>
-                <IconCheck size={15} /> Import {totalChemicals} chemicals
+              <button className="btn btn-primary" onClick={doImportLabeled} disabled={busy}>
+                <IconCheck size={15} /> Import {labeledTotal} chemicals
               </button>
               <button className="btn btn-secondary" onClick={reset}>
                 <IconX size={15} /> Cancel
@@ -162,7 +196,107 @@ export default function ImportPage() {
         </div>
       )}
 
-      {result && !busy && (
+      {/* ---- Format B: plain list of names -> pick a lab ---- */}
+      {fileName && !busy && preview?.format === "list" && (
+        <div className="card">
+          <div className="card-header import-head">
+            <span>
+              <IconCheck size={15} style={{ verticalAlign: "-2px", marginRight: 6 }} />
+              {fileName}
+            </span>
+            <span className="badge badge-accent">
+              {preview.total} {preview.total === 1 ? "name" : "names"} found
+            </span>
+          </div>
+          <div className="card-pad">
+            {preview.labs.length === 0 ? (
+              <div className="import-note">
+                <IconAlert size={15} style={{ verticalAlign: "-2px", marginRight: 6 }} />
+                You have no labs yet. Create a lab first, then import this list.
+              </div>
+            ) : (
+              <>
+                <label className="table-label" htmlFor="import-lab-select">
+                  Which lab do these chemicals belong to?
+                </label>
+                <select
+                  id="import-lab-select"
+                  value={selectedLab}
+                  onChange={(e) => setSelectedLab(e.target.value)}
+                  style={{ width: "100%", maxWidth: 420, marginBottom: 16 }}
+                >
+                  <option value="">— Choose a lab —</option>
+                  {preview.labs.map((l) => (
+                    <option key={l._id} value={l._id}>
+                      {l.name}
+                      {l.location ? ` (${l.location})` : ""}
+                    </option>
+                  ))}
+                </select>
+
+                {preview.struckCount > 0 && (
+                  <label
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      fontSize: 13,
+                      marginBottom: 16,
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={includeStruck}
+                      onChange={(e) => setIncludeStruck(e.target.checked)}
+                    />
+                    Also import {preview.struckCount} crossed-out{" "}
+                    {preview.struckCount === 1 ? "item" : "items"}
+                  </label>
+                )}
+
+                <div className="import-list" style={{ maxHeight: 260, overflowY: "auto" }}>
+                  {preview.names.map((n, i) => (
+                    <div
+                      className="import-item"
+                      key={`${n.name}-${i}`}
+                      style={
+                        n.struck && !includeStruck
+                          ? { opacity: 0.4, textDecoration: "line-through" }
+                          : undefined
+                      }
+                    >
+                      <div className="import-item-name">
+                        <IconFlask size={15} />
+                        {n.name}
+                        {n.struck && (
+                          <span className="badge badge-warning">crossed out</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="import-actions">
+                  <button
+                    className="btn btn-primary"
+                    onClick={doImportList}
+                    disabled={busy || !selectedLab}
+                  >
+                    <IconCheck size={15} /> Import {listActiveCount}{" "}
+                    {listActiveCount === 1 ? "chemical" : "chemicals"}
+                  </button>
+                  <button className="btn btn-secondary" onClick={reset}>
+                    <IconX size={15} /> Cancel
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ---- Result: labeled ---- */}
+      {result?.format === "labeled" && !busy && (
         <div className="card">
           <div className="card-header">
             <IconCheck size={15} style={{ verticalAlign: "-2px", marginRight: 6 }} />
@@ -170,7 +304,7 @@ export default function ImportPage() {
           </div>
           <div className="card-pad">
             <div className="import-list">
-              {result.map((r) => (
+              {result.rows.map((r) => (
                 <div className="import-item" key={r.lab}>
                   <div className="import-item-name">
                     <IconFlask size={15} />
@@ -195,14 +329,48 @@ export default function ImportPage() {
         </div>
       )}
 
+      {/* ---- Result: list ---- */}
+      {result?.format === "list" && !busy && (
+        <div className="card">
+          <div className="card-header">
+            <IconCheck size={15} style={{ verticalAlign: "-2px", marginRight: 6 }} />
+            Import complete
+          </div>
+          <div className="card-pad">
+            <div className="import-item">
+              <div className="import-item-name">
+                <IconFlask size={15} />
+                Lab {result.summary.lab}
+              </div>
+              <div style={{ fontSize: 13 }}>
+                <span className="badge badge-success">
+                  {result.summary.added} added
+                </span>{" "}
+                {result.summary.skipped > 0 && (
+                  <span className="badge badge-warning">
+                    {result.summary.skipped} already existed
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className="import-actions">
+              <button className="btn btn-secondary" onClick={reset}>
+                <IconUpload size={15} /> Import another file
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {!fileName && !busy && (
         <div className="card card-pad" style={{ marginTop: 16 }}>
           <div className="import-note">
             <IconAlert size={15} style={{ verticalAlign: "-2px", marginRight: 6 }} />
-            How it works: each sheet in the Excel file becomes a lab (e.g.{" "}
-            <code>116</code>). Chemicals are read from the "Item Name" row and
-            quantities from "Qty available". Existing labs/chemicals get updated,
-            the rest are added.
+            Two formats are supported. <strong>Stock sheet:</strong> each sheet
+            becomes a lab, names from the "Item Name" row and quantities from "Qty
+            available". <strong>Name list:</strong> one chemical per row — you pick
+            which lab to add them to before importing. Chemicals already in that
+            lab are skipped.
           </div>
         </div>
       )}
