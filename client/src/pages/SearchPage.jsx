@@ -8,6 +8,7 @@ import { IconSearch, IconPin, IconMapPin } from "../components/Icons.jsx";
 export default function SearchPage() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState(null);
+  const [suggestions, setSuggestions] = useState(null);
   const [labs, setLabs] = useState([]);
   const inputRef = useRef(null);
 
@@ -18,6 +19,7 @@ export default function SearchPage() {
 
   useEffect(() => {
     const q = query.trim();
+    setSuggestions(null);
     if (!q) {
       setResults(null);
       return;
@@ -30,6 +32,23 @@ export default function SearchPage() {
     }, 250);
     return () => clearTimeout(t);
   }, [query]);
+
+  // No exact match — look for related / similarly-named chemicals on the shelf.
+  useEffect(() => {
+    const q = query.trim();
+    if (!q || results === null || results.length > 0) {
+      setSuggestions(null);
+      return;
+    }
+    let cancelled = false;
+    api
+      .getChemicalSuggestions({ q })
+      .then((list) => !cancelled && setSuggestions(list))
+      .catch(() => !cancelled && setSuggestions([]));
+    return () => {
+      cancelled = true;
+    };
+  }, [query, results]);
 
   const showEmptyState = query.trim() !== "" && results !== null && results.length === 0;
 
@@ -72,8 +91,58 @@ export default function SearchPage() {
           <EmptyState
             icon={<IconSearch size={40} />}
             title={`No matches for "${query.trim()}"`}
-            hint="Check the spelling, or search by formula or CAS number instead."
+            hint={
+              suggestions === null
+                ? "Looking for related chemicals…"
+                : suggestions.length > 0
+                ? "Not in the inventory — but these related chemicals are available:"
+                : "Check the spelling, or search by formula or CAS number instead."
+            }
           />
+          {suggestions && suggestions.length > 0 && (
+            <>
+              {suggestions.map((c) => (
+                <div className="search-result" key={c._id}>
+                  <div className="result-main">
+                    <div className="result-name">
+                      {c.name}
+                      {c.formula && <span className="muted">{c.formula}</span>}
+                      <HazardBadge level={c.hazard} />
+                      {c.matchReason && (
+                        <span className="badge badge-accent" style={{ fontSize: 11 }}>
+                          {c.matchReason}
+                        </span>
+                      )}
+                    </div>
+                    <div className="result-loc">
+                      <IconMapPin size={14} />
+                      <strong style={{ color: "var(--accent)" }}>
+                        {c.lab?.name || "Unassigned"}
+                      </strong>
+                      {c.lab?.location && <span>· {c.lab.location}</span>}
+                      {c.storage && <span>· {c.storage}</span>}
+                    </div>
+                  </div>
+                  <div
+                    className="chem-actions"
+                    style={{ flexDirection: "column", alignItems: "flex-end", gap: 2 }}
+                  >
+                    <span style={{ fontWeight: 600 }}>
+                      {c.quantity} {c.unit}
+                    </span>
+                    <span className="muted" style={{ fontSize: 12 }}>
+                      {c.casNumber ? `CAS ${c.casNumber}` : "No CAS"}
+                    </span>
+                  </div>
+                </div>
+              ))}
+              <div style={{ padding: "12px 18px", borderTop: "1px solid var(--border)" }}>
+                <Link to="/chemicals" className="muted" style={{ fontSize: 13 }}>
+                  Still need "{query.trim()}"? Add it to the inventory →
+                </Link>
+              </div>
+            </>
+          )}
         </div>
       ) : (
         <div className="card">

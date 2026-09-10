@@ -1,6 +1,8 @@
 import { Router } from "express";
 import Chemical from "../models/Chemical.js";
 import Lab from "../models/Lab.js";
+import { suggestChemicals } from "../utils/similarity.js";
+import { isGeminiEnabled, geminiSuggestChemicals } from "../utils/gemini.js";
 
 const router = Router();
 
@@ -21,6 +23,40 @@ router.get("/", async (req, res) => {
       .populate("lab", "name location")
       .sort({ name: 1 });
     res.json(chemicals);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Related / "did you mean" chemicals — used when a search finds no exact match.
+router.get("/suggestions", async (req, res) => {
+  try {
+    const { lab, q } = req.query;
+    if (!q || !q.trim()) return res.json([]);
+
+    const filter = {};
+    if (lab && lab !== "all") filter.lab = lab;
+
+    const chemicals = await Chemical.find(filter)
+      .populate("lab", "name location")
+      .limit(2000);
+
+    const query = q.trim();
+    let suggestions = [];
+
+    if (isGeminiEnabled()) {
+      try {
+        suggestions = await geminiSuggestChemicals(query, chemicals, { limit: 6 });
+      } catch (err) {
+        console.warn("Gemini suggestion failed, using local match:", err.message);
+      }
+    }
+
+    if (suggestions.length === 0) {
+      suggestions = suggestChemicals(query, chemicals, { limit: 6 });
+    }
+
+    res.json(suggestions);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

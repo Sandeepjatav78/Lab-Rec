@@ -45,6 +45,13 @@ export const api = {
     const suffix = qs.toString() ? `?${qs}` : "";
     return request(`/chemicals${suffix}`);
   },
+  getChemicalSuggestions: (params = {}) => {
+    const qs = new URLSearchParams();
+    if (params.q) qs.set("q", params.q);
+    if (params.lab && params.lab !== "all") qs.set("lab", params.lab);
+    const suffix = qs.toString() ? `?${qs}` : "";
+    return request(`/chemicals/suggestions${suffix}`);
+  },
   createChemical: (payload) =>
     request("/chemicals", { method: "POST", body: JSON.stringify(payload) }),
   updateChemical: (id, payload) =>
